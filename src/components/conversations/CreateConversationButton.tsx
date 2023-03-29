@@ -5,9 +5,11 @@ import ConversationTitleModal from "../modals/ConversationTitleModal";
 import { addConversation } from "../../api";
 import { Button } from "@twilio-paste/button";
 import { PlusIcon } from "@twilio-paste/icons/esm/PlusIcon";
-import { useDispatch } from "react-redux";
-import { bindActionCreators } from "redux";
-import { actionCreators } from "../../store";
+import {
+  updateCurrentConversation,
+  addNotifications,
+  updateParticipants,
+} from "../../store/action-creators";
 
 interface NewConvoProps {
   client?: Client;
@@ -17,10 +19,6 @@ interface NewConvoProps {
 const CreateConversationButton: React.FC<NewConvoProps> = (
   props: NewConvoProps
 ) => {
-  const dispatch = useDispatch();
-  const { updateCurrentConversation, addNotifications, updateParticipants } =
-    bindActionCreators(actionCreators, dispatch);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleOpen = () => setIsModalOpen(true);
 

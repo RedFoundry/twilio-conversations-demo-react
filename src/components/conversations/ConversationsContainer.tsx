@@ -1,20 +1,21 @@
 import React, { useState } from "react";
 import { Client } from "@twilio/conversations";
 import { ChevronDoubleLeftIcon } from "@twilio-paste/icons/esm/ChevronDoubleLeftIcon";
-import { Box } from "@twilio-paste/core";
+import { Box, Text } from "@twilio-paste/core";
 import { ChevronDoubleRightIcon } from "@twilio-paste/icons/esm/ChevronDoubleRightIcon";
 
 import CreateConversationButton from "./CreateConversationButton";
 import ConversationsList from "./ConversationsList";
 import styles from "../../styles";
+import { TwilioClients } from "../AppContainer";
 
 interface ConvosContainerProps {
-  client?: Client;
+  clients?: TwilioClients;
 }
 
-const ConversationsContainer: React.FC<ConvosContainerProps> = (
-  props: ConvosContainerProps
-) => {
+const ConversationsContainer: React.FC<ConvosContainerProps> = ({
+  clients,
+}: ConvosContainerProps) => {
   const [listHidden, hideList] = useState(false);
 
   return (
@@ -26,10 +27,16 @@ const ConversationsContainer: React.FC<ConvosContainerProps> = (
       }
     >
       <Box style={styles.newConvoButton}>
-        <CreateConversationButton
-          client={props.client}
-          collapsed={listHidden}
-        />
+        {clients &&
+          Object.keys(clients).map((conversationID) => {
+            <>
+              <Text as="span">{conversationID}</Text>
+              <CreateConversationButton
+                client={clients[conversationID]}
+                collapsed={listHidden}
+              />
+            </>;
+          })}
       </Box>
       <Box style={styles.convoList}>
         {!listHidden ? <ConversationsList /> : null}

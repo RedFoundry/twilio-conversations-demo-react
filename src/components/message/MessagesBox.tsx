@@ -38,7 +38,6 @@ export async function loadMessages(
 
 interface MessageProps {
   convoSid: string;
-  client?: Client;
   convo: ReduxConversation;
   upsertMessage: AddMessagesType;
   messages: ReduxMessage[];
@@ -48,7 +47,14 @@ interface MessageProps {
 }
 
 const MessagesBox: React.FC<MessageProps> = (props: MessageProps) => {
-  const { messages, convo, loadingState, lastReadIndex, upsertMessage } = props;
+  const {
+    messages,
+    convo,
+    loadingState,
+    lastReadIndex,
+    upsertMessage,
+    participants,
+  } = props;
   const [hasMore, setHasMore] = useState(
     messages?.length === CONVERSATION_PAGE_SIZE
   );
@@ -151,7 +157,7 @@ const MessagesBox: React.FC<MessageProps> = (props: MessageProps) => {
           <MessageList
             messages={messages ?? []}
             conversation={convo}
-            participants={props.participants}
+            participants={participants}
             lastReadIndex={lastConversationReadIndex}
           />
         </div>

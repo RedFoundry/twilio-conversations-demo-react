@@ -1,17 +1,23 @@
-import { bindActionCreators } from "redux";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import ConversationView from "./ConversationView";
 import {
   SetParticipantsType,
   SetSidType,
   SetUnreadMessagesType,
 } from "../../types";
-import { actionCreators, AppState } from "../../store";
+import { AppState } from "../../store";
 import { getTypingMessage, unexpectedErrorNotification } from "../../helpers";
 import { UNEXPECTED_ERROR_MESSAGE } from "../../constants";
 import { ReduxConversation } from "../../store/reducers/convoReducer";
 import { getSdkConversationObject } from "../../conversations-objects";
 import { ReduxMessage } from "../../store/reducers/messageListReducer";
+import {
+  updateCurrentConversation,
+  updateParticipants,
+  updateUnreadMessages,
+  setLastReadIndex,
+  addNotifications,
+} from "../../store/action-creators";
 
 function getLastMessage(messages: ReduxMessage[], typingData: string[]) {
   if (messages === undefined || messages === null) {
@@ -76,15 +82,6 @@ const ConversationsList: React.FC = () => {
   const unreadMessages = useSelector((state: AppState) => state.unreadMessages);
   const participants = useSelector((state: AppState) => state.participants);
   const typingData = useSelector((state: AppState) => state.typingData);
-
-  const dispatch = useDispatch();
-  const {
-    updateCurrentConversation,
-    updateParticipants,
-    updateUnreadMessages,
-    setLastReadIndex,
-    addNotifications,
-  } = bindActionCreators(actionCreators, dispatch);
 
   if (conversations === undefined || conversations === null) {
     return <div className="empty" />;

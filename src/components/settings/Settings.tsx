@@ -1,6 +1,4 @@
 import React, { useState, createRef, useMemo } from "react";
-import { useDispatch } from "react-redux";
-import { bindActionCreators } from "redux";
 
 import { Client } from "@twilio/conversations";
 import { Box, Spinner } from "@twilio-paste/core";
@@ -12,7 +10,6 @@ import { addParticipant, removeParticipant } from "../../api";
 import AddChatParticipantModal from "../modals/addChatMemberModal";
 import AddSMSParticipantModal from "../modals/addSMSParticipantModal";
 import AddWhatsAppParticipantModal from "../modals/addWhatsAppParticipant";
-import { actionCreators } from "../../store";
 import ActionErrorModal from "../modals/ActionErrorModal";
 import {
   CONVERSATION_MESSAGES,
@@ -30,6 +27,11 @@ import {
   getSdkParticipantObject,
 } from "../../conversations-objects";
 import { ReduxParticipant } from "../../store/reducers/participantsReducer";
+import {
+  updateCurrentConversation,
+  updateConversation,
+  addNotifications,
+} from "../../store/action-creators";
 
 interface SettingsProps {
   participants: ReduxParticipant[];
@@ -77,10 +79,6 @@ const Settings: React.FC<SettingsProps> = (props: SettingsProps) => {
   >();
 
   const nameInputRef = createRef<HTMLInputElement>();
-
-  const dispatch = useDispatch();
-  const { updateCurrentConversation, updateConversation, addNotifications } =
-    bindActionCreators(actionCreators, dispatch);
 
   const sdkConvo = useMemo(
     () => getSdkConversationObject(props.convo),

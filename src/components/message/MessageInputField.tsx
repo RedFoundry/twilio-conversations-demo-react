@@ -1,6 +1,4 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
-import { bindActionCreators } from "redux";
 
 import { Client } from "@twilio/conversations";
 import { AttachIcon } from "@twilio-paste/icons/esm/AttachIcon";
@@ -8,21 +6,17 @@ import { Box, Button } from "@twilio-paste/core";
 import { useTheme } from "@twilio-paste/theme";
 import { Text } from "@twilio-paste/text";
 
-import { actionCreators } from "../../store";
 import { MAX_FILE_SIZE, UNEXPECTED_ERROR_MESSAGE } from "../../constants";
 import { getTypingMessage, unexpectedErrorNotification } from "../../helpers";
 import MessageInput from "./MessageInput";
 import SendMessageButton from "./SendMessageButton";
 import { ReduxConversation } from "../../store/reducers/convoReducer";
-import {
-  getSdkConversationObject,
-  getSdkMessageObject,
-} from "../../conversations-objects";
+import { getSdkConversationObject } from "../../conversations-objects";
 import { ReduxMessage } from "../../store/reducers/messageListReducer";
+import { addNotifications } from "../../store/action-creators";
 
 interface SendMessageProps {
   convoSid: string;
-  client: Client;
   messages: ReduxMessage[];
   convo: ReduxConversation;
   typingData: string[];
@@ -38,10 +32,6 @@ const MessageInputField: React.FC<SendMessageProps> = (
 
   const theme = useTheme();
   const typingInfo = getTypingMessage(props.typingData);
-
-  const dispatch = useDispatch();
-  const { upsertMessages, addNotifications, addAttachment } =
-    bindActionCreators(actionCreators, dispatch);
 
   useEffect(() => {
     setMessage("");
@@ -96,7 +86,7 @@ const MessageInputField: React.FC<SendMessageProps> = (
       return;
     }
 
-    const { convo, client } = props;
+    const { convo } = props;
     const currentDate: Date = new Date();
     const sdkConvo = getSdkConversationObject(convo);
 

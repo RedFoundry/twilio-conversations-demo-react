@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { bindActionCreators } from "redux";
+import { useSelector } from "react-redux";
 import { saveAs } from "file-saver";
 
 import { useTheme } from "@twilio-paste/theme";
 
 import { getBlobFile, getMessageStatus } from "../../api";
 import MessageView from "./MessageView";
-import { actionCreators, AppState } from "../../store";
+import { AppState } from "../../store";
 import ImagePreviewModal from "../modals/ImagePreviewModal";
 import Horizon from "./Horizon";
 import {
@@ -28,6 +27,7 @@ import {
 import { getSdkConversationObject } from "../../conversations-objects";
 import TimeAgo from "javascript-time-ago";
 import { ReduxParticipant } from "../../store/reducers/participantsReducer";
+import { addNotifications, addAttachment } from "../../store/action-creators";
 
 interface MessageListProps {
   messages: ReduxMessage[];
@@ -53,12 +53,6 @@ const MessageList: React.FC<MessageListProps> = (props: MessageListProps) => {
   const theme = useTheme();
   const myRef = useRef<HTMLInputElement>(null);
   const messagesLength: number = messages.length;
-
-  const dispatch = useDispatch();
-  const { addAttachment, addNotifications } = bindActionCreators(
-    actionCreators,
-    dispatch
-  );
   const conversationAttachments = useSelector(
     (state: AppState) => state.attachments[conversation.sid]
   );

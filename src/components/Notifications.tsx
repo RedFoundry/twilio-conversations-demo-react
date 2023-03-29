@@ -1,17 +1,15 @@
 import React, { useEffect } from "react";
-import { bindActionCreators } from "redux";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { ToasterPush, useToaster } from "@twilio-paste/core";
 import { Toaster } from "@twilio-paste/toast";
 
-import { actionCreators, AppState } from "../store";
+import { AppState } from "../store";
+import { removeNotifications } from "../store/action-creators";
 
 const Notifications: React.FC = () => {
   const toaster = useToaster();
   const notifications = useSelector((state: AppState) => state.notifications);
-  const dispatch = useDispatch();
-  const { removeNotifications } = bindActionCreators(actionCreators, dispatch);
 
   useEffect(() => {
     if (!notifications.length) {

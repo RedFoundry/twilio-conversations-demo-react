@@ -6,22 +6,22 @@ import { Menu, MenuButton, useMenuState, MenuItem } from "@twilio-paste/menu";
 import { ChevronDownIcon } from "@twilio-paste/icons/esm/ChevronDownIcon";
 import React, { useMemo } from "react";
 import styles from "../styles";
-import { ConnectionState } from "@twilio/conversations";
+import { TwilioConnectionStates } from "./AppContainer";
 
 type AppHeaderProps = {
   user: string;
   onSignOut: () => void;
-  connectionState: ConnectionState;
+  connectionStates: TwilioConnectionStates;
 };
 const AppHeader: React.FC<AppHeaderProps> = ({
   user,
   onSignOut,
-  connectionState,
+  connectionStates,
 }) => {
   const menu = useMenuState();
 
-  const label: "online" | "connecting" | "offline" = useMemo(() => {
-    switch (connectionState) {
+  const getLabel = (connectionID: string) => {
+    switch (connectionStates[connectionID]) {
       case "connected":
         return "online";
       case "connecting":
@@ -29,7 +29,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       default:
         return "offline";
     }
-  }, [connectionState]);
+  };
 
   return (
     <div style={styles.appHeader}>
@@ -50,28 +50,34 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           }}
         >
           {user}
-          <Text
-            as="span"
-            color={
-              label === "online"
-                ? "colorTextIconAvailable"
-                : label === "connecting"
-                ? "colorTextIconBusy"
-                : "colorTextIconError"
-            }
-            style={{
-              fontSize: "10px",
-              display: "block",
-              paddingTop: 5,
-              lineHeight: 0,
-            }}
-          >
-            {label === "online"
-              ? "Online"
-              : label === "connecting"
-              ? "Connecting…"
-              : "Offline"}
-          </Text>
+          {Object.keys(connectionStates).map((connectionID) => {
+            const label = getLabel(connectionID);
+            return (
+              <Text
+                key={connectionID}
+                as="span"
+                color={
+                  label === "online"
+                    ? "colorTextIconAvailable"
+                    : label === "connecting"
+                    ? "colorTextIconBusy"
+                    : "colorTextIconError"
+                }
+                style={{
+                  fontSize: "10px",
+                  display: "block",
+                  paddingTop: 5,
+                  lineHeight: 0,
+                }}
+              >
+                {label === "online"
+                  ? "Online"
+                  : label === "connecting"
+                  ? "Connecting…"
+                  : "Offline"}
+              </Text>
+            );
+          })}
         </div>
         <MenuButton {...menu} variant="link" size="reset">
           <ChevronDownIcon

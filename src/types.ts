@@ -29,3 +29,32 @@ export enum Content {
   AddSMS = "Add SMS participant",
   AddWhatsApp = "Add WhatsApp participant",
 }
+
+export interface RelatedEntity {
+  ID: number;
+  Code: string;
+  Name: null | string;
+  Address: Address;
+  PrimaryContact: PrimaryContact;
+  EntityID: number;
+}
+
+export interface Address {
+  ID: number;
+  AddressLine1: string;
+  AddressLine2: string | null;
+  City: string;
+  Province: string;
+  PostalCode: string;
+  CountryCode: string;
+  CountyID: number | null;
+  Latitude: number;
+  Longitude: number;
+}
+
+export interface PrimaryContact {
+  ID: number;
+  Name: string;
+  PhoneNumber: string;
+  EMailAddress: string;
+}

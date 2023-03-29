@@ -14,12 +14,11 @@ import { ReduxConversation } from "../../store/reducers/convoReducer";
 
 interface ConvoContainerProps {
   conversation?: ReduxConversation;
-  client?: Client;
 }
 
-const ConversationContainer: React.FC<ConvoContainerProps> = (
-  props: ConvoContainerProps
-) => {
+const ConversationContainer: React.FC<ConvoContainerProps> = ({
+  conversation,
+}: ConvoContainerProps) => {
   const theme = useTheme();
 
   const sid = useSelector((state: AppState) => state.sid);
@@ -36,20 +35,19 @@ const ConversationContainer: React.FC<ConvoContainerProps> = (
 
   return (
     <Box style={styles.convosWrapperBox}>
-      {sid && props.conversation && props.client ? (
+      {sid && conversation ? (
         <>
           <ConversationDetails
             convoSid={sid}
-            convo={props.conversation}
+            convo={conversation}
             participants={participants}
           />
 
           <MessagesBox
             key={sid}
             convoSid={sid}
-            convo={props.conversation}
+            convo={conversation}
             upsertMessage={pushMessages}
-            client={props.client}
             messages={messages[sid]}
             loadingState={loadingStatus}
             participants={participants}
@@ -58,9 +56,8 @@ const ConversationContainer: React.FC<ConvoContainerProps> = (
 
           <MessageInputField
             convoSid={sid}
-            client={props.client}
             messages={messages[sid]}
-            convo={props.conversation}
+            convo={conversation}
             typingData={typingData}
           />
         </>

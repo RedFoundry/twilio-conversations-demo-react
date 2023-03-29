@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import {
   Conversation,
   Message,
@@ -13,6 +13,11 @@ import {
   ReduxMessage,
 } from "./store/reducers/messageListReducer";
 import {
+  login as loginReducer,
+  logout,
+  updateActiveRole,
+} from "./store/action-creators";
+import {
   CONVERSATION_MESSAGES,
   CONVERSATION_PAGE_SIZE,
   PARTICIPANT_MESSAGES,
@@ -22,7 +27,38 @@ import { NotificationsType } from "./store/reducers/notificationsReducer";
 import { successNotification, unexpectedErrorNotification } from "./helpers";
 import { getSdkMessageObject } from "./conversations-objects";
 import { ReduxParticipant } from "./store/reducers/participantsReducer";
+import { store } from "./store";
 
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL,
+  headers: {
+    Accept: "*/*",
+    "Content-Type": "application/json",
+  },
+});
+
+const setApiInterceptors = () => {
+  api.interceptors.request.use(async (req) => {
+    const { token } = store.getState();
+    if (token) {
+      req.headers.Authorization = `Bearer ${token}`;
+    }
+    return req;
+  });
+
+  api.interceptors.response.use(
+    (res) => res,
+    async (error) => {
+      const { token } = store.getState();
+      if (token && error?.response?.status === 403) {
+        logout();
+      }
+      throw error;
+    }
+  );
+};
+
+setApiInterceptors();
 type ParticipantResponse = ReturnType<typeof Conversation.prototype.add>;
 
 export async function addConversation(
@@ -99,32 +135,101 @@ export async function addParticipant(
   return Promise.reject(UNEXPECTED_ERROR_MESSAGE);
 }
 
-export async function getToken(
-  username: string,
-  password: string
-): Promise<string> {
-  const requestAddress = process.env
-    .REACT_APP_ACCESS_TOKEN_SERVICE_URL as string;
-  if (!requestAddress) {
-    return Promise.reject(
-      "REACT_APP_ACCESS_TOKEN_SERVICE_URL is not configured, cannot login"
-    );
-  }
-
+export const login = async (username: string, password: string) => {
   try {
-    const response = await axios.get(requestAddress, {
-      params: { identity: username, password: password },
+    const response = await api.post("/user/login/token", {
+      username,
+      password,
     });
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
-      return Promise.reject(error.response.data ?? "Authentication error.");
+    const {
+      Value: accessToken,
+      Successful: successful,
+      FailureReason: failureReason,
+    } = response.data;
+    if (successful) {
+      await getUserStatus(accessToken);
+    } else {
+      throw new Error(failureReason);
     }
+  } catch (e: any) {
+    console.log({ e });
+    const { with: status } = e?.response?.data || {};
 
-    process.stderr?.write(`ERROR received from ${requestAddress}: ${error}\n`);
-    return Promise.reject(`ERROR received from ${requestAddress}: ${error}\n`);
+    if (status === 401) throw e;
+    throw setCustomApiError(e, "Something went wrong. Please try again.");
+  }
+};
+
+export const getToken = async (entity?: string) => {
+  let token;
+  try {
+    const { data } = await api.get(
+      `/chat/token?forEntityId=${entity}&deviceType=web`
+    );
+    console.log("TOKEN_TWILIO", data);
+    token = data;
+  } catch (error) {
+    console.log("twilio test failed:", { error, entity });
+  }
+  return token;
+};
+
+const getUserStatus = (accessToken: string) =>
+  api
+    .get("/user/current/status", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    })
+    .then((res) => {
+      const { CurrentUserName: currentUserName, ActiveRole: activeRole } =
+        res.data;
+      if (res.status === 200 && currentUserName) {
+        loginReducer(accessToken);
+        updateActiveRole(activeRole);
+      } else {
+        throw httpErrorToCopy(res.status);
+      }
+    })
+    .catch((e) => {
+      const { with: status } = e?.response?.data || {};
+
+      if (status === 401) throw e;
+      throw setCustomApiError(e, "Something went wrong. Please try again.");
+    });
+
+export const getSchedule = () =>
+  api.get("/activity/future").catch((e) => {
+    const { with: status } = e?.response?.data || {};
+
+    if (status === 401) throw e;
+    throw setCustomApiError(e, "Something went wrong. Please try again.");
+  });
+
+function httpErrorToCopy(code: number | null) {
+  if (!code) return "Something went wrong. Please try again.";
+  switch (code) {
+    case 404:
+      return "The content you are looking for is not available.";
+    case 401:
+      return "The request you are trying to make can not be authenticated.";
+    case 400:
+      return "The request attempted is incorrect or corrupt on the client side.";
+    case 500:
+      return "Something has gone wrong on the web site's server.";
+    case 502:
+      return "Something has gone wrong on the web site's server.";
+    default:
+      return "Something went wrong. Please try again.";
   }
 }
+
+const setCustomApiError = (e: AxiosError, m: string) => {
+  const newError: AxiosError = { ...e };
+  newError.message = m;
+  return newError;
+};
 
 export async function getMessageStatus(
   message: ReduxMessage,

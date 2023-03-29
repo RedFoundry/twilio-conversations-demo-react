@@ -9,6 +9,10 @@ interface LoginAction {
   type: ActionType.LOGIN;
   payload: string;
 }
+interface ActiveRoleAction {
+  type: ActionType.ACTIVE_ROLE_UPDATE;
+  payload: string;
+}
 
 interface LogOutAction {
   type: ActionType.LOGOUT;
@@ -109,6 +113,7 @@ interface RemoveNotifications {
 
 export type Action =
   | LoginAction
+  | ActiveRoleAction
   | LogOutAction
   | UpsertConversation
   | RemoveConversation

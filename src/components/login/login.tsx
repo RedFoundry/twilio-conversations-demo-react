@@ -1,43 +1,15 @@
 import { useState } from "react";
-import axios from "axios";
 import { Button } from "@twilio-paste/button";
 import { Box } from "@twilio-paste/core";
 import { ProductConversationsIcon } from "@twilio-paste/icons/esm/ProductConversationsIcon";
 
-import { getToken } from "../../api";
+import { login } from "../../api";
 import { InputType } from "../../types";
 import ModalInputField from "../modals/ModalInputField";
 import styles from "../../styles";
 import TwilioLogo from "../icons/TwilioLogo";
 
-type SetTokenType = (token: string) => void;
-
-interface LoginProps {
-  setToken: SetTokenType;
-}
-
-async function login(
-  username: string,
-  password: string,
-  setToken: (token: string) => void
-): Promise<string> {
-  try {
-    const token = await getToken(username.trim(), password);
-    if (token === "") {
-      return "Something went wrong.";
-    }
-
-    localStorage.setItem("username", username);
-    localStorage.setItem("password", password);
-    setToken(token);
-
-    return "";
-  } catch (error) {
-    return error;
-  }
-}
-
-const Login: React.FC<LoginProps> = (props: LoginProps) => {
+const Login = () => {
   const [isFormDirty, setFormDirty] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState("");
@@ -97,9 +69,10 @@ const Login: React.FC<LoginProps> = (props: LoginProps) => {
               disabled={!username || !password}
               variant="primary"
               onClick={async () => {
-                const error = await login(username, password, props.setToken);
-                if (error) {
-                  setFormError(error);
+                try {
+                  await login(username, password);
+                } catch (e: any) {
+                  setFormError(e.message);
                 }
               }}
               id="login"

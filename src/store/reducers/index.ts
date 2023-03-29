@@ -1,6 +1,7 @@
 import { Action, combineReducers } from "redux";
 
 import tokenReducer from "./tokenReducer";
+import activeRoleReducer from "./activeRoleReducer";
 import convoReducer, { ReduxConversation } from "./convoReducer";
 import sidReducer from "./currentConvoReducer";
 import messageReducer, { ChatMessagesState } from "./messageListReducer";
@@ -29,6 +30,7 @@ export type AppState = {
   typingData: TypingDataState;
   lastReadIndex: number;
   notifications: NotificationsType;
+  activeRole: string;
 };
 
 export const initialState = {
@@ -43,6 +45,7 @@ export const initialState = {
   typingData: {},
   lastReadIndex: -1,
   notifications: [],
+  activeRole: "",
 };
 
 const reducers = (
@@ -50,8 +53,6 @@ const reducers = (
   action: Action
 ): ReturnType<typeof appReducer> => {
   if (action.type === ActionType.LOGOUT) {
-    localStorage.removeItem("username");
-    localStorage.removeItem("password");
     return appReducer(initialState, action);
   }
 
@@ -70,6 +71,7 @@ const appReducer = combineReducers({
   attachments: attachmentsReducer,
   typingData: typingDataReducer,
   notifications: notificationsReducer,
+  activeRole: activeRoleReducer,
 });
 
 export default reducers;
